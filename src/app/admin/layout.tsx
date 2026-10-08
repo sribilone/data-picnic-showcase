@@ -15,9 +15,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isAdmin) redirect("/no-access");
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <AdminSidebar email={user.email ?? ""} />
-      <main className="min-w-0 flex-1 px-10 py-8">{children}</main>
+      <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">{children}</main>
     </div>
   );
 }

@@ -1,27 +1,29 @@
 /**
- * ส่งผลงาน · SCR-022 · FR-022 ถึง FR-028 · BR-008 ถึง BR-011
- * ลำดับ ย่อภาพ lib/image.ts → อัปโหลด works/{round}/{uid}/{เวลา}.jpg → submit_work()
+ * ส่งผลงาน · SCR-022 · FR-022 ถึง FR-028 · BR-008 ถึง BR-012
  */
+import { EmptyState } from "@/components/board/EmptyState";
 import { StudentHeader } from "@/components/StudentHeader";
-import { Todo } from "@/components/Todo";
+import { SubmitForm } from "@/components/submit/SubmitForm";
+import { displayName, getSession } from "@/lib/session";
+import type { MyWork, ShownRound } from "@/lib/types";
 
-export default function SubmitPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SubmitPage() {
+  const { supabase, user } = await getSession();
+  const [{ data: rounds }, { data: mine }] = await Promise.all([supabase.rpc("shown_round"), supabase.rpc("my_works")]);
+  const round = ((rounds ?? []) as ShownRound[])[0];
+  const existing = round ? ((mine ?? []) as MyWork[]).find((m) => m.round_id === round.id) ?? null : null;
+
   return (
     <>
-      <StudentHeader userName="ผู้เรียน" />
-      <main className="mx-auto max-w-[1280px] px-8 pb-14">
-        <h1 className="text-5xl font-bold">ส่งผลงานของฉัน</h1>
-        <Todo
-          scr="SCR-022"
-          items={[
-            "เลือกไฟล์ PNG หรือ JPG ไม่เกิน 10 MB พร้อมภาพตัวอย่างตามสัดส่วนจริง",
-            "ช่องพิมพ์สไตล์และโทนสี พร้อมคำแนะนำให้กดเลือก",
-            "ช่องยืนยันไม่มีข้อมูลส่วนบุคคลของผู้อื่น",
-            "ส่งสำเร็จแสดงรหัสผลงาน ปิดรับผลงานแล้วแสดงข้อความแทนแบบฟอร์ม",
-            "ส่งไม่สำเร็จลองใหม่อัตโนมัติ 2 ครั้ง",
-          ]}
-        />
-      </main>
+      <StudentHeader userName={displayName(user)} />
+      {!round || !round.upload_open || !user ? (
+        <EmptyState title="ปิดรับผลงานแล้ว" cta={{ href: "/", label: "กลับไปที่บอร์ด" }} />
+      ) : (
+        <SubmitForm roundId={round.id} roundName={round.name} uploadLabel={round.upload_close_label} userId={user.id}
+          existing={existing ? { code: existing.code, style: existing.style, tone: existing.tone, image_path: existing.image_path } : null} />
+      )}
     </>
   );
 }

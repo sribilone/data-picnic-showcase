@@ -12,7 +12,7 @@ const NAV = [
 /** เมนูหลังบ้าน · ข้อ 8.1 ของ FRD */
 export function AdminSidebar({ email }: { email: string }) {
   return (
-    <nav aria-label="เมนูหลังบ้าน" className="flex w-full max-w-[280px] flex-col gap-1.5 border-r border-[rgba(124,245,196,0.18)] bg-[rgba(4,18,12,0.6)] px-5 py-7">
+    <nav aria-label="เมนูหลังบ้าน" className="flex w-full flex-col gap-1.5 border-b md:max-w-[280px] md:border-b-0 md:border-r border-[rgba(124,245,196,0.18)] bg-[rgba(4,18,12,0.6)] px-5 py-7">
       <Logo small />
       <span className="mb-4 mt-1 text-[13px] text-ice/70">Showcase · ผู้ดูแล</span>
       {NAV.map((n) => (

@@ -16,6 +16,10 @@
   --font-logo: var(--font-space), sans-serif;
 }
 
+html {
+  background-color: var(--color-bg-2);
+}
+
 body {
   min-height: 100vh;
   color: #ffffff;
@@ -23,7 +27,6 @@ body {
     radial-gradient(900px 520px at 92% -6%, rgba(46, 214, 160, 0.36) 0%, rgba(46, 214, 160, 0) 62%),
     radial-gradient(760px 520px at -6% 104%, rgba(20, 170, 160, 0.3) 0%, rgba(20, 170, 160, 0) 62%),
     linear-gradient(155deg, var(--color-bg-1) 0%, var(--color-bg-2) 52%, var(--color-bg-3) 100%);
-  background-attachment: fixed;
 }
 
 @layer components {

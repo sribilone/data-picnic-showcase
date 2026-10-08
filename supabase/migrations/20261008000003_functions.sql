@@ -47,12 +47,12 @@ $$;
 
 -- รอบที่แสดงอยู่ ไม่มีแถวแปลว่าไม่มีรอบที่แสดง · FR-012
 create or replace function public.shown_round()
-returns table (id uuid, name text, period text, hearts_per_user int, upload_open boolean,
+returns table (id uuid, name text, period text, hearts_per_user int, allow_self_vote boolean, upload_open boolean,
                vote_status text, counts_visible boolean, upload_close_label text, vote_close_label text)
 language sql stable security definer
 set search_path = public, private
 as $$
-  select r.id, r.name, r.period, r.hearts_per_user, r.upload_open, r.vote_status,
+  select r.id, r.name, r.period, r.hearts_per_user, r.allow_self_vote, r.upload_open, r.vote_status,
          private.counts_visible(r.show_counts, r.vote_status), r.upload_close_label, r.vote_close_label
   from public.rounds r where r.is_shown limit 1;
 $$;

@@ -8,6 +8,7 @@ export type ShownRound = {
   name: string;
   period: string;
   hearts_per_user: number;
+  allow_self_vote: boolean;
   upload_open: boolean;
   vote_status: VoteStatus;
   counts_visible: boolean;
@@ -65,3 +66,36 @@ export function orientation(w: number, h: number) {
   if (w === h) return "จัตุรัส";
   return h >= 2 * w ? "แนวตั้งยาว" : "แนวตั้ง";
 }
+
+export type Round = {
+  id: string;
+  name: string;
+  period: string;
+  code_prefix: string;
+  hearts_per_user: number;
+  allow_self_vote: boolean;
+  show_counts: ShowCounts;
+  upload_open: boolean;
+  vote_status: VoteStatus;
+  is_shown: boolean;
+  upload_close_label: string | null;
+  vote_close_label: string | null;
+  created_at: string;
+};
+
+export type RoundStats = { works: number; hidden: number; voters: number; hearts: number };
+
+export type WorkRow = {
+  id: string;
+  round_id: string;
+  code: string;
+  owner_name: string;
+  owner_email: string;
+  style: string;
+  tone: string;
+  image_path: string;
+  image_w: number;
+  image_h: number;
+  status: "shown" | "hidden";
+  created_at: string;
+};

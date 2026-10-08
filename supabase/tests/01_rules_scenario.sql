@@ -52,7 +52,11 @@ select public.cast_vote((select work_id from public.board() where code='A01'));
 select public.cast_vote((select work_id from public.board() where code='A02'));
 \echo -- hearts limit: admin sets hearts 1 for round A? test with student 13 extra after lowering
 select pg_temp.as_user('01');
+\echo -- change hearts while open (expect error), then close, change, reopen
 select public.admin_save_round(id, name, period, code_prefix, 1, allow_self_vote, show_counts, upload_close_label, vote_close_label) from public.rounds where code_prefix='A';
+select public.admin_set_vote((select id from public.rounds where code_prefix='A'), 'closed');
+select public.admin_save_round(id, name, period, code_prefix, 1, allow_self_vote, show_counts, upload_close_label, vote_close_label) from public.rounds where code_prefix='A';
+select public.admin_set_vote((select id from public.rounds where code_prefix='A'), 'open');
 select pg_temp.as_user('11');
 select public.retract_vote((select work_id from public.board() where code='A03'));
 select public.cast_vote((select work_id from public.board() where code='A03'));

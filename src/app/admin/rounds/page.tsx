@@ -1,22 +1,22 @@
 /**
- * จัดการรอบ · SCR-041 SCR-042 · FR-032 ถึง FR-040 · BR-002 BR-003 BR-013
- * ฟังก์ชัน admin_save_round admin_show_round admin_set_upload admin_set_vote admin_delete_round
+ * จัดการรอบ · SCR-041 SCR-042 · FR-032 ถึง FR-040
  */
-import { Todo } from "@/components/Todo";
+import { RoundsManager } from "@/components/admin/RoundsManager";
+import { getSession } from "@/lib/session";
+import type { Round, RoundStats } from "@/lib/types";
 
-export default function RoundsPage() {
-  return (
-    <>
-      <h1 className="text-4xl font-bold">จัดการรอบ</h1>
-      <Todo
-        scr="SCR-041 SCR-042"
-        items={[
-          "การ์ดรอบพร้อมสวิตช์ รับผลงาน โหวต แสดงบนบอร์ด",
-          "เลือกแสดงรอบใหม่แล้วรอบเดิมปิดทั้ง 3 สวิตช์",
-          "กล่องเพิ่มหรือแก้ไขรอบ ชื่อ ช่วง ตัวอักษรนำหน้า หัวใจต่อคน เวลาที่แสดง โหวตผลงานตัวเอง การแสดงจำนวนหัวใจ",
-          "ลบรอบได้เฉพาะรอบที่ยังไม่มีผลงาน",
-        ]}
-      />
-    </>
+export const dynamic = "force-dynamic";
+
+export default async function RoundsPage() {
+  const { supabase } = await getSession();
+  const { data } = await supabase.from("rounds").select("*").order("created_at").order("code_prefix");
+  const rounds = (data ?? []) as Round[];
+  const stats: Record<string, RoundStats> = {};
+  await Promise.all(
+    rounds.map(async (r) => {
+      const { data: s } = await supabase.rpc("admin_round_stats", { p_round: r.id });
+      if (s?.[0]) stats[r.id] = s[0] as RoundStats;
+    }),
   );
+  return <RoundsManager rounds={rounds} stats={stats} />;
 }

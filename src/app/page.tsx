@@ -1,28 +1,49 @@
 /**
  * บอร์ดผลงาน · SCR-001 SCR-003 SCR-005 SCR-006 SCR-007
  * FR-006 ถึง FR-021 · BR-001 ถึง BR-006 BR-018 BR-019
- * ข้อมูล public.shown_round() public.board() public.my_votes()
  */
+import { BoardView } from "@/components/board/BoardView";
+import { EmptyState } from "@/components/board/EmptyState";
+import { ResultsView } from "@/components/board/ResultsView";
 import { StudentHeader } from "@/components/StudentHeader";
-import { Todo } from "@/components/Todo";
+import { displayName, getBoardData } from "@/lib/session";
 
-export default function BoardPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BoardPage() {
+  const { user, round, works, myVotes } = await getBoardData();
+  const name = displayName(user);
+
+  let body: React.ReactNode;
+  if (!round) {
+    body = <EmptyState title="ยังไม่มีรอบที่แสดง" />;
+  } else if (works.length === 0) {
+    body = (
+      <EmptyState
+        title={`${round.name} ยังไม่มีผลงาน`}
+        cta={round.upload_open ? { href: user ? "/submit" : "/login?next=/submit", label: `ส่งผลงาน${round.name}` } : undefined}
+      />
+    );
+  } else if (round.vote_status === "closed" && round.counts_visible) {
+    body = <ResultsView round={round} works={works} />;
+  } else {
+    body = <BoardView round={round} works={works} myVotes={myVotes} loggedIn={!!user} />;
+  }
+
   return (
     <>
-      <StudentHeader />
-      <main className="mx-auto max-w-[1280px] px-8 pb-14">
-        <h1 className="text-5xl font-bold">ผลงาน Infographic</h1>
-        <Todo
-          scr="SCR-001 SCR-003"
-          items={[
-            "ดึงรอบที่แสดงด้วย shown_round() ไม่มีแถวให้แสดง SCR-006",
-            "ดึงผลงานด้วย board() ไม่มีผลงานให้แสดง SCR-005",
-            "การ์ดใช้ ArtFrame กรอบจัตุรัส เรียงตามรหัส",
-            "เข้าสู่ระบบแล้วแสดงตัวนับหัวใจ ปุ่มโหวต ถอนโหวต ผลงานของคุณ ครบแล้ว",
-            "ปิดโหวตและ counts_visible เป็นจริง แสดงอันดับแบบ SCR-007",
-          ]}
-        />
-      </main>
+      <StudentHeader userName={name} chip={round ? chipText(round.name, round.upload_open, round.vote_status) : null} />
+      {body}
+      <footer className="mx-auto max-w-[1280px] px-8 pb-10 text-sm text-ice/70">
+        ไม่แสดงชื่อเจ้าของผลงาน และไม่เปิดเผยว่าใครโหวตผลงานใด
+      </footer>
     </>
   );
+}
+
+function chipText(name: string, uploadOpen: boolean, vote: string) {
+  if (vote === "open") return `${name} · เปิดโหวต`;
+  if (vote === "closed") return `${name} · ปิดโหวตแล้ว`;
+  if (uploadOpen) return `${name} · เปิดรับผลงาน`;
+  return name;
 }

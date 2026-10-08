@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* data.picnic Dark Glassmorphism · docs/design/README.md */
+@theme {
+  --color-ink: #04120c;
+  --color-bg-1: #05140e;
+  --color-bg-2: #020604;
+  --color-bg-3: #06281d;
+  --color-mint: #3ee0a1;
+  --color-glow: #7cf5c4;
+  --color-ice: #cfffe3;
+  --color-deep: #12a07a;
+  --color-warn: #ff9a3d;
+  --color-warn-soft: #ffd3a8;
+  --font-sans: var(--font-bai), system-ui, sans-serif;
+  --font-logo: var(--font-space), sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  color: #ffffff;
+  background:
+    radial-gradient(900px 520px at 92% -6%, rgba(46, 214, 160, 0.36) 0%, rgba(46, 214, 160, 0) 62%),
+    radial-gradient(760px 520px at -6% 104%, rgba(20, 170, 160, 0.3) 0%, rgba(20, 170, 160, 0) 62%),
+    linear-gradient(155deg, var(--color-bg-1) 0%, var(--color-bg-2) 52%, var(--color-bg-3) 100%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .glass {
+    border-radius: 28px;
+    border: 1.5px solid rgba(124, 245, 196, 0.3);
+    background: linear-gradient(180deg, rgba(62, 224, 161, 0.16) 0%, rgba(6, 22, 16, 0.78) 100%);
+  }
+  .btn-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--color-ink);
+    background: linear-gradient(135deg, #cfffe3 0%, #3ee0a1 60%, #12a07a 100%);
+    box-shadow: 0 6px 0 #0b5a40;
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1.5px solid var(--color-glow);
+    background: rgba(124, 245, 196, 0.08);
+  }
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--color-warn-soft);
+    border: 1.5px solid var(--color-warn);
+    background: rgba(255, 154, 61, 0.1);
+  }
+  /* ตัวเลื่อนภาพแนวตั้งยาว · SCR-004 */
+  .tall-scroll {
+    scrollbar-width: none;
+  }
+  .tall-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}

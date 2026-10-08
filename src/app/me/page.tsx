@@ -7,14 +7,14 @@ import { Heart } from "@/components/Heart";
 import { MyWorkCard } from "@/components/me/MyWorkCard";
 import { SentToast } from "@/components/me/SentToast";
 import { StudentHeader } from "@/components/StudentHeader";
-import { displayName, getSession } from "@/lib/session";
+import { getSession } from "@/lib/session";
 import type { BoardWork, MyWork, ShownRound } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function MyWorkPage({ searchParams }: { searchParams: Promise<{ sent?: string }> }) {
   const { sent } = await searchParams;
-  const { supabase, user } = await getSession();
+  const { supabase } = await getSession();
   const [{ data: mine }, { data: votes }, { data: rounds }, { data: board }] = await Promise.all([
     supabase.rpc("my_works"), supabase.rpc("my_votes"), supabase.rpc("shown_round"), supabase.rpc("board"),
   ]);
@@ -26,7 +26,7 @@ export default async function MyWorkPage({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <StudentHeader userName={displayName(user)} />
+      <StudentHeader />
       <main className="mx-auto flex max-w-[1280px] flex-col gap-6 px-8 pb-14 pt-6">
         <h1 className="text-5xl font-bold">ผลงานของฉัน</h1>
 

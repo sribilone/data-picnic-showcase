@@ -4,7 +4,7 @@
 import { EmptyState } from "@/components/board/EmptyState";
 import { StudentHeader } from "@/components/StudentHeader";
 import { SubmitForm } from "@/components/submit/SubmitForm";
-import { displayName, getSession } from "@/lib/session";
+import { getSession } from "@/lib/session";
 import type { MyWork, ShownRound } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function SubmitPage() {
 
   return (
     <>
-      <StudentHeader userName={displayName(user)} />
+      <StudentHeader />
       {!round || !round.upload_open || !user ? (
         <EmptyState title="ปิดรับผลงานแล้ว" cta={{ href: "/", label: "กลับไปที่บอร์ด" }} />
       ) : (

@@ -60,6 +60,15 @@ export type AdminResultRow = {
   image_h: number;
 };
 
+/** ข้อความสัดส่วนภาพ เช่น 16:9 · SCR-004 */
+export function ratioText(w: number, h: number) {
+  const known = [[16, 9], [4, 3], [3, 4], [2, 3], [1, 2], [9, 16], [1, 1], [3, 2]];
+  const r = w / h;
+  const hit = known.find(([a, b]) => Math.abs(a / b - r) < 0.03);
+  if (hit) return `${hit[0]}:${hit[1]}`;
+  return r >= 1 ? `${r.toFixed(2)}:1` : `1:${(1 / r).toFixed(2)}`;
+}
+
 /** สัดส่วนภาพ · ข้อ 4.3 ของ FRD */
 export function orientation(w: number, h: number) {
   if (w > h) return "แนวนอน";

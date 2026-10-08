@@ -19,12 +19,12 @@
 npm run dev
 npm run typecheck
 npm run lint
+npm test
 npm run build
 ```
 
 ## ก่อนบอกว่างานเสร็จ
 
-- typecheck lint build ผ่าน
+- typecheck lint test build ผ่าน
 - ทำแถวที่เกี่ยวข้องใน `docs/05_TEST_CHECKLIST.md` แล้ว
-- ลบกล่อง `Todo` ของหน้านั้นแล้ว
 - อัปเดตคอลัมน์สถานะในตารางระยะงานของ `docs/02_DEVELOPMENT_PLAN.md`

@@ -6,13 +6,13 @@ import { BoardView } from "@/components/board/BoardView";
 import { EmptyState } from "@/components/board/EmptyState";
 import { ResultsView } from "@/components/board/ResultsView";
 import { StudentHeader } from "@/components/StudentHeader";
-import { displayName, getBoardData } from "@/lib/session";
+import { AutoRefresh } from "@/components/board/AutoRefresh";
+import { getBoardData } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function BoardPage() {
   const { user, round, works, myVotes } = await getBoardData();
-  const name = displayName(user);
 
   let body: React.ReactNode;
   if (!round) {
@@ -32,8 +32,9 @@ export default async function BoardPage() {
 
   return (
     <>
-      <StudentHeader userName={name} chip={round ? chipText(round.name, round.upload_open, round.vote_status) : null} />
+      <StudentHeader chip={round ? chipText(round.name, round.upload_open, round.vote_status) : null} />
       {body}
+      <AutoRefresh seconds={20} />
       <footer className="mx-auto max-w-[1280px] px-8 pb-10 text-sm text-ice/70">
         ไม่แสดงชื่อเจ้าของผลงาน และไม่เปิดเผยว่าใครโหวตผลงานใด
       </footer>

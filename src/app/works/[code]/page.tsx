@@ -9,7 +9,7 @@ import { DetailVote } from "@/components/work/DetailVote";
 import { TallViewer } from "@/components/work/TallViewer";
 import { publicImageUrl } from "@/lib/image";
 import { getBoardData } from "@/lib/session";
-import { orientation } from "@/lib/types";
+import { orientation, ratioText } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -92,12 +92,4 @@ export default async function WorkPage({ params }: { params: Promise<{ code: str
       </div>
     </div>
   );
-}
-
-function ratioText(w: number, h: number) {
-  const known = [[16, 9], [4, 3], [3, 4], [2, 3], [1, 2], [9, 16], [1, 1], [3, 2]];
-  const r = w / h;
-  const hit = known.find(([a, b]) => Math.abs(a / b - r) < 0.03);
-  if (hit) return `${hit[0]}:${hit[1]}`;
-  return r >= 1 ? `${r.toFixed(2)}:1` : `1:${(1 / r).toFixed(2)}`;
 }

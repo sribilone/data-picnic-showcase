@@ -6,6 +6,7 @@
  */
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { friendlyError } from "@/lib/errors";
 import { thumbPath } from "@/lib/image";
 import type { ShowCounts, VoteStatus } from "@/lib/types";
 
@@ -15,7 +16,7 @@ async function call(fn: string, args: Record<string, unknown>): Promise<ActionRe
   const supabase = await createClient();
   const { error } = await supabase.rpc(fn, args);
   revalidatePath("/", "layout");
-  return error ? { error: error.message } : {};
+  return error ? { error: friendlyError(error.message) } : {};
 }
 
 async function removeFiles(paths: string[]) {
@@ -49,7 +50,7 @@ export const setWorkHidden = async (id: string, hidden: boolean) => call("admin_
 export async function deleteWork(id: string): Promise<ActionResult> {
   const supabase = await createClient();
   const { data: path, error } = await supabase.rpc("admin_delete_work", { p_work: id });
-  if (error) return { error: error.message };
+  if (error) return { error: friendlyError(error.message) };
   if (typeof path === "string") await removeFiles([path]);
   revalidatePath("/", "layout");
   return {};
@@ -64,7 +65,7 @@ export const removeAdmin = async (email: string) => call("admin_remove_admin", {
 export async function purgeRoundWorks(roundId: string): Promise<ActionResult> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_purge_round_works", { p_round: roundId });
-  if (error) return { error: error.message };
+  if (error) return { error: friendlyError(error.message) };
   await removeFiles((data ?? []) as string[]);
   revalidatePath("/", "layout");
   return {};
@@ -74,7 +75,7 @@ export async function purgeRoundWorks(roundId: string): Promise<ActionResult> {
 export async function purgeStudents(): Promise<ActionResult & { deleted?: number }> {
   const supabase = await createClient();
   const { data: canPurge, error } = await supabase.rpc("admin_can_purge");
-  if (error) return { error: error.message };
+  if (error) return { error: friendlyError(error.message) };
   if (!canPurge) return { error: "ปิดรับผลงานและปิดโหวตทุกรอบก่อน" };
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { error: "ยังไม่ได้ตั้งค่า SUPABASE_SERVICE_ROLE_KEY" };
 
@@ -84,7 +85,7 @@ export async function purgeStudents(): Promise<ActionResult & { deleted?: number
   let deleted = 0;
   for (let page = 1; ; page++) {
     const { data, error: listError } = await svc.auth.admin.listUsers({ page, perPage: 200 });
-    if (listError) return { error: listError.message };
+    if (listError) return { error: friendlyError(listError.message) };
     const users = data.users.filter((u) => !keep.has((u.email ?? "").toLowerCase()));
     for (const u of users) {
       const { error: delError } = await svc.auth.admin.deleteUser(u.id);

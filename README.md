@@ -16,6 +16,7 @@ Next.js 15 · Tailwind CSS 4 · Supabase Auth Postgres Storage · Vercel
 npm install
 cp .env.example .env.local
 npm run dev
+npm test
 ```
 
 ## เอกสาร

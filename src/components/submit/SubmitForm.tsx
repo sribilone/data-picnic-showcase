@@ -7,6 +7,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { friendlyError } from "@/lib/errors";
 import { checkFile, prepareImages, publicImageUrl, thumbPath, type Resized } from "@/lib/image";
 
 const STYLE_HINTS = ["การ์ตูนลายเส้น", "มินิมอล", "ไอโซเมตริก", "ป๊อปอาร์ต", "สีน้ำ"];
@@ -70,7 +71,7 @@ export function SubmitForm({
         p_round: roundId, p_image_path: path, p_w: w, p_h: h,
         p_style: style.trim(), p_tone: tone.trim(), p_consent: consent,
       });
-      if (rpcError) throw new Error(rpcError.message);
+      if (rpcError) throw new Error(friendlyError(rpcError.message));
       if (file && existing) {
         await supabase.storage.from("works").remove([existing.image_path, thumbPath(existing.image_path)]);
       }
@@ -78,8 +79,8 @@ export function SubmitForm({
       router.refresh();
     } catch (e) {
       if (newPath) await supabase.storage.from("works").remove([newPath, thumbPath(newPath)]);
-      const msg = e instanceof Error ? e.message : "";
-      setError(msg === "ปิดรับผลงานแล้ว" ? msg : msg && !msg.includes("fetch") ? msg : "ส่งไม่สำเร็จ ลองอีกครั้ง");
+      const msg = e instanceof Error ? friendlyError(e.message) : "";
+      setError(!msg || msg.startsWith("เชื่อมต่อไม่ได้") || msg.startsWith("ทำรายการไม่สำเร็จ") ? "ส่งไม่สำเร็จ ลองอีกครั้ง" : msg);
       setBusy(false);
     }
   }

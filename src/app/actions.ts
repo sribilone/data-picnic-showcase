@@ -7,7 +7,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { friendlyError } from "@/lib/errors";
-import { thumbPath } from "@/lib/image";
+import { BUCKET, thumbPath } from "@/lib/image";
 
 export type ActionResult = { error?: string };
 
@@ -30,7 +30,7 @@ export async function cancelWork(workId: string): Promise<ActionResult> {
   const supabase = await createClient();
   const { data: path, error } = await supabase.rpc("cancel_work", { p_work: workId });
   if (error) return { error: friendlyError(error.message) };
-  if (typeof path === "string") await supabase.storage.from("works").remove([path, thumbPath(path)]);
+  if (typeof path === "string") await supabase.storage.from(BUCKET).remove([path, thumbPath(path)]);
   revalidatePath("/", "layout");
   return {};
 }

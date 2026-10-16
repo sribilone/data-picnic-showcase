@@ -7,7 +7,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { friendlyError } from "@/lib/errors";
-import { thumbPath } from "@/lib/image";
+import { isShowcaseUser } from "@/lib/supabase/schema";
+import { BUCKET, thumbPath } from "@/lib/image";
 import type { ShowCounts, VoteStatus } from "@/lib/types";
 
 export type ActionResult = { error?: string };
@@ -23,7 +24,7 @@ async function removeFiles(paths: string[]) {
   if (!paths.length) return;
   const supabase = await createClient();
   const all = paths.flatMap((p) => [p, thumbPath(p)]);
-  for (let i = 0; i < all.length; i += 100) await supabase.storage.from("works").remove(all.slice(i, i + 100));
+  for (let i = 0; i < all.length; i += 100) await supabase.storage.from(BUCKET).remove(all.slice(i, i + 100));
 }
 
 // ---------- รอบ ----------
@@ -61,6 +62,31 @@ export const addAdmin = async (email: string, name: string) =>
   /^\S+@\S+\.\S+$/.test(email.trim()) ? call("admin_add_admin", { p_email: email, p_name: name }) : { error: "อีเมลไม่ถูกต้อง" };
 export const removeAdmin = async (email: string) => call("admin_remove_admin", { p_email: email });
 
+// ---------- ตั้งรหัสผ่านใหม่ให้ผู้เรียนที่ลืม ----------
+export async function resetPassword(email: string, password: string): Promise<ActionResult> {
+  const mail = email.trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(mail)) return { error: "อีเมลไม่ถูกต้อง" };
+  if (password.length < 6) return { error: "รหัสผ่านอย่างน้อย 6 ตัว" };
+  const supabase = await createClient();
+  const { data: isAdmin } = await supabase.rpc("is_admin");
+  if (!isAdmin) return { error: "ไม่มีสิทธิ์" };
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { error: "ยังไม่ได้ตั้งค่า SUPABASE_SERVICE_ROLE_KEY" };
+  const svc = createServiceClient();
+  for (let page = 1; ; page++) {
+    const { data, error } = await svc.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) return { error: friendlyError(error.message) };
+    const user = data.users.find((u) => isShowcaseUser(u) && (u.email ?? "").toLowerCase() === mail);
+    if (user) {
+      const { error: upError } = await svc.auth.admin.updateUserById(user.id, { password });
+      if (upError) return { error: friendlyError(upError.message) };
+      await svc.from("audit_log").insert({ admin_email: (await supabase.auth.getUser()).data.user?.email ?? "", action: "ตั้งรหัสผ่านใหม่", target: mail });
+      revalidatePath("/admin/settings");
+      return {};
+    }
+    if (data.users.length < 200) return { error: "ไม่พบอีเมลนี้" };
+  }
+}
+
 // ---------- ลบข้อมูลหลังจบกิจกรรม · BR-017 ----------
 export async function purgeRoundWorks(roundId: string): Promise<ActionResult> {
   const supabase = await createClient();
@@ -86,7 +112,7 @@ export async function purgeStudents(): Promise<ActionResult & { deleted?: number
   for (let page = 1; ; page++) {
     const { data, error: listError } = await svc.auth.admin.listUsers({ page, perPage: 200 });
     if (listError) return { error: friendlyError(listError.message) };
-    const users = data.users.filter((u) => !keep.has((u.email ?? "").toLowerCase()));
+    const users = data.users.filter((u) => isShowcaseUser(u) && !keep.has((u.email ?? "").toLowerCase())); // ไม่แตะบัญชีของระบบอื่น
     for (const u of users) {
       const { error: delError } = await svc.auth.admin.deleteUser(u.id);
       if (!delError) deleted++;

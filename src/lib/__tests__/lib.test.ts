@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { toCsv } from "../csv";
-import { friendlyError } from "../errors";
+import { authError, friendlyError } from "../errors";
 import { checkFile, thumbPath } from "../image";
 import { orientation, ratioText } from "../types";
 
@@ -50,5 +50,16 @@ describe("CSV · FR-048", () => {
     const csv = toCsv(["รหัส", "สไตล์"], [["A01", 'ป๊อป "อาร์ต"']]);
     expect(csv.startsWith("﻿")).toBe(true);
     expect(csv).toContain('"A01","ป๊อป ""อาร์ต"""');
+  });
+});
+
+describe("authError · FR-001", () => {
+  it("แปลข้อผิดพลาดตอนเข้าสู่ระบบ", () => {
+    expect(authError("Invalid login credentials")).toBe("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    expect(authError("User already registered")).toBe("อีเมลนี้สมัครแล้ว ให้กดเข้าสู่ระบบ");
+    expect(authError("Password should be at least 6 characters.")).toBe("รหัสผ่านอย่างน้อย 6 ตัว");
+    expect(authError("Request rate limit reached")).toBe("มีคนเข้าพร้อมกันมาก รอสักครู่แล้วลองอีกครั้ง");
+    expect(authError("Email not confirmed")).toBe("สมัครแล้ว แต่ยังเข้าใช้ไม่ได้ แจ้งผู้สอน");
+    expect(authError("something else")).toBe("เข้าสู่ระบบไม่สำเร็จ ลองอีกครั้ง");
   });
 });

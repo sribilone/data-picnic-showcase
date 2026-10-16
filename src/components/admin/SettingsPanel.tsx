@@ -4,7 +4,7 @@
  * ตั้งค่า · SCR-045 · FR-050 ถึง FR-053 · BR-016 BR-017
  */
 import { useState, useTransition } from "react";
-import { addAdmin, purgeRoundWorks, purgeStudents, removeAdmin } from "@/app/admin/actions";
+import { addAdmin, purgeRoundWorks, purgeStudents, removeAdmin, resetPassword } from "@/app/admin/actions";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Toast } from "@/components/Toast";
 import type { Round } from "@/lib/types";
@@ -17,6 +17,8 @@ export function SettingsPanel({
   admins: Admin[]; me: string; rounds: Round[]; roundWorks: Record<string, number>; students: number | null; canPurge: boolean;
 }) {
   const [email, setEmail] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetPw, setResetPw] = useState("");
   const [ask, setAsk] = useState<"students" | "round" | { remove: string } | null>(null);
   const [roundId, setRoundId] = useState(rounds[0]?.id ?? "");
   const [msg, setMsg] = useState<{ text: string; tone: "info" | "error" } | null>(null);
@@ -49,8 +51,19 @@ export function SettingsPanel({
         ))}
         <form className="flex flex-wrap gap-3 px-5 py-4"
           onSubmit={(e) => { e.preventDefault(); run(() => addAdmin(email, ""), () => { setEmail(""); return "เพิ่มผู้ดูแลแล้ว"; }); }}>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="อีเมลบัญชี Google" aria-label="อีเมลผู้ดูแลที่จะเพิ่ม" className={`${input} flex-[1_1_280px]`} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="อีเมลที่ใช้สมัคร" aria-label="อีเมลผู้ดูแลที่จะเพิ่ม" className={`${input} flex-[1_1_280px]`} />
           <button type="submit" disabled={pending || !email} className="btn-ghost h-12 px-5 text-[15px] disabled:opacity-40">เพิ่มผู้ดูแล</button>
+        </form>
+      </section>
+
+      <section className="overflow-hidden rounded-[28px] border-[1.5px] border-[rgba(124,245,196,0.25)] bg-[rgba(4,18,12,0.55)]">
+        <div className="px-5 pb-1 pt-5 text-[22px] font-bold">ตั้งรหัสผ่านใหม่</div>
+        <div className="px-5 text-sm text-white/70">สำหรับผู้เรียนที่ลืมรหัสผ่าน</div>
+        <form className="flex flex-wrap gap-3 px-5 py-4"
+          onSubmit={(e) => { e.preventDefault(); run(() => resetPassword(resetEmail, resetPw), () => { const t = `ตั้งรหัสผ่านใหม่ให้ ${resetEmail.trim()} แล้ว`; setResetEmail(""); setResetPw(""); return t; }); }}>
+          <input id="reset-email" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="อีเมลผู้เรียน" aria-label="อีเมลผู้เรียน" className={`${input} flex-[2_1_240px]`} />
+          <input id="reset-password" type="text" value={resetPw} onChange={(e) => setResetPw(e.target.value)} placeholder="รหัสผ่านใหม่ อย่างน้อย 6 ตัว" aria-label="รหัสผ่านใหม่" autoComplete="off" className={`${input} flex-[1_1_200px]`} />
+          <button type="submit" disabled={pending || !resetEmail || resetPw.length < 6} className="btn-ghost h-12 px-5 text-[15px] disabled:opacity-40">ตั้งรหัสผ่าน</button>
         </form>
       </section>
 

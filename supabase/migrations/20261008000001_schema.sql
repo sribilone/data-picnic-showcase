@@ -2,17 +2,22 @@
 -- อ้างอิง docs/01_FRD.md
 
 create extension if not exists pgcrypto with schema extensions;
-create schema if not exists private;
+-- ใช้ schema ของตัวเอง ไม่ชนกับระบบอื่นใน project เดียวกัน
+create schema if not exists showcase;
+create schema if not exists showcase_private;
+grant usage on schema showcase to anon, authenticated, service_role;
+alter default privileges in schema showcase grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema showcase grant all on sequences to anon, authenticated, service_role;
 
 -- ผู้ดูแล · BR-016
-create table public.admins (
+create table showcase.admins (
   email      text primary key check (email = lower(email)),
   name       text not null default '',
   created_at timestamptz not null default now()
 );
 
 -- รอบ · FR-032 ถึง FR-040
-create table public.rounds (
+create table showcase.rounds (
   id                 uuid primary key default gen_random_uuid(),
   name               text not null,
   period             text not null default '',
@@ -30,13 +35,13 @@ create table public.rounds (
   next_seq           int  not null default 1,
   created_at         timestamptz not null default now()
 );
-create unique index rounds_one_shown on public.rounds (is_shown) where is_shown;   -- BR-002
-create unique index rounds_prefix_unique on public.rounds (code_prefix);
+create unique index rounds_one_shown on showcase.rounds (is_shown) where is_shown;   -- BR-002
+create unique index rounds_prefix_unique on showcase.rounds (code_prefix);
 
 -- ผลงาน · FR-022 ถึง FR-031
-create table public.works (
+create table showcase.works (
   id          uuid primary key default gen_random_uuid(),
-  round_id    uuid not null references public.rounds (id) on delete cascade,
+  round_id    uuid not null references showcase.rounds (id) on delete cascade,
   code        text not null,
   owner_id    uuid references auth.users (id) on delete set null,
   owner_name  text not null,          -- เก็บ ณ ตอนส่ง ลบบัญชีแล้วชื่อยังอยู่ · ข้อ 7.4
@@ -51,21 +56,21 @@ create table public.works (
   updated_at  timestamptz not null default now(),
   unique (round_id, code)
 );
-create unique index works_one_per_owner on public.works (round_id, owner_id)
+create unique index works_one_per_owner on showcase.works (round_id, owner_id)
   where owner_id is not null;                                                  -- BR-009
 
 -- หัวใจ · ไม่เก็บตัวตนผู้โหวต · BR-007
-create table public.votes (
-  work_id    uuid not null references public.works (id) on delete cascade,  -- BR-012 BR-014
-  round_id   uuid not null references public.rounds (id) on delete cascade,
+create table showcase.votes (
+  work_id    uuid not null references showcase.works (id) on delete cascade,  -- BR-012 BR-014
+  round_id   uuid not null references showcase.rounds (id) on delete cascade,
   voter_key  text not null,                                                  -- HMAC ทางเดียว
   created_at timestamptz not null default now(),
   primary key (work_id, voter_key)                                           -- BR-003
 );
-create index votes_round_voter on public.votes (round_id, voter_key);
+create index votes_round_voter on showcase.votes (round_id, voter_key);
 
 -- ประวัติการกระทำของผู้ดูแล · FR-054 FR-055
-create table public.audit_log (
+create table showcase.audit_log (
   id          bigint generated always as identity primary key,
   admin_email text not null,
   action      text not null,
@@ -74,10 +79,10 @@ create table public.audit_log (
 );
 
 -- ค่าลับ อ่านได้เฉพาะฟังก์ชัน security definer
-create table private.settings (
+create table showcase_private.settings (
   key   text primary key,
   value text not null
 );
-insert into private.settings (key, value)
+insert into showcase_private.settings (key, value)
 values ('voter_pepper', encode(extensions.gen_random_bytes(32), 'hex'))
 on conflict (key) do nothing;

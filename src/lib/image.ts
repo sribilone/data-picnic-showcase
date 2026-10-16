@@ -47,7 +47,10 @@ export function thumbPath(path: string) {
   return path.replace(/\.jpg$/, "_t.jpg");
 }
 
-/** URL สาธารณะของภาพใน bucket works */
+/** bucket ของระบบนี้ ตั้งชื่อไม่ให้ชนกับระบบอื่นใน project เดียวกัน */
+export const BUCKET = "showcase-works";
+
+/** URL สาธารณะของภาพใน bucket */
 export function publicImageUrl(path: string) {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/works/${path}`;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
 }

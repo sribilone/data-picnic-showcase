@@ -1,7 +1,7 @@
 # AI for HR Showcase
 
 บอร์ดผลงาน Infographic สำหรับคลาส AI for HR · data.picnic
-ผู้เรียนส่งผลงาน เพื่อนเข้าสู่ระบบด้วย Google แล้วโหวต ผู้สอนกำหนดรอบและส่งออกผลโหวต
+ผู้เรียนส่งผลงาน เพื่อนเข้าสู่ระบบด้วยอีเมลและรหัสผ่านแล้วโหวต ผู้สอนกำหนดรอบและส่งออกผลโหวต
 
 ## เทคโนโลยี
 
@@ -25,7 +25,7 @@ npm test
 |---|---|
 | `docs/01_FRD.md` | ความต้องการระบบ FR BR NFR สถานะ หน้าจอ |
 | `docs/02_DEVELOPMENT_PLAN.md` | แผนพัฒนา ระยะงาน โครงโฟลเดอร์ ความเสี่ยง |
-| `docs/03_SETUP.md` | ตั้งค่า GitHub Supabase Google Vercel |
+| `docs/03_SETUP.md` | ตั้งค่า GitHub Supabase Vercel |
 | `docs/04_DATA_MODEL.md` | ตารางและฟังก์ชันในฐานข้อมูล |
 | `docs/05_TEST_CHECKLIST.md` | รายการทดสอบและรายการตรวจวันสอน |
 | `docs/design/README.md` | ลิงก์หน้าจอใน Claude Design และค่าธีม |

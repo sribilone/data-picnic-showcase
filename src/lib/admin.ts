@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { isShowcaseUser } from "@/lib/supabase/schema";
 
 /** จำนวนบัญชีผู้เรียน ไม่รวมผู้ดูแล ใช้ในหน้าตั้งค่าซึ่งตรวจสิทธิ์ผู้ดูแลแล้ว · SCR-045 */
 export async function countStudents(): Promise<number | null> {
@@ -14,7 +15,7 @@ export async function countStudents(): Promise<number | null> {
   for (let page = 1; ; page++) {
     const { data, error } = await svc.auth.admin.listUsers({ page, perPage: 200 });
     if (error) return null;
-    n += data.users.filter((u) => !keep.has((u.email ?? "").toLowerCase())).length;
+    n += data.users.filter((u) => isShowcaseUser(u) && !keep.has((u.email ?? "").toLowerCase())).length;
     if (data.users.length < 200) break;
   }
   return n;

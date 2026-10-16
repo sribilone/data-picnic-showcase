@@ -35,7 +35,7 @@ export async function StudentHeader({ chip }: { chip?: string | null }) {
         </>
       ) : (
         <Link href="/login" className="rounded-full bg-white px-5 py-3 font-bold text-ink shadow-[0_0_28px_rgba(124,245,196,0.4)]">
-          เข้าสู่ระบบด้วย Google
+          เข้าสู่ระบบ
         </Link>
       )}
     </header>

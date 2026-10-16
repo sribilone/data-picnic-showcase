@@ -45,7 +45,7 @@ export function BoardView({
               <h1 className="text-[56px] font-bold leading-tight">
                 ผลงาน Infographic <span className="text-glow">{round.name}</span>
               </h1>
-              {voteOpen && <p className="text-lg text-white/80">เข้าสู่ระบบด้วย Google แล้วกดหัวใจได้ {round.hearts_per_user} ผลงาน</p>}
+              {voteOpen && <p className="text-lg text-white/80">เข้าสู่ระบบแล้วกดหัวใจได้ {round.hearts_per_user} ผลงาน</p>}
             </>
           )}
         </div>

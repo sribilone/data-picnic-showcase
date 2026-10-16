@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/errors";
-import { checkFile, prepareImages, publicImageUrl, thumbPath, type Resized } from "@/lib/image";
+import { BUCKET, checkFile, prepareImages, publicImageUrl, thumbPath, type Resized } from "@/lib/image";
 
 const STYLE_HINTS = ["การ์ตูนลายเส้น", "มินิมอล", "ไอโซเมตริก", "ป๊อปอาร์ต", "สีน้ำ"];
 const TONE_HINTS = ["ส้มครีม", "เขียวพาสเทล", "ฟ้าน้ำทะเล", "เหลืองสดใส", "กรมท่า"];
@@ -73,12 +73,12 @@ export function SubmitForm({
       });
       if (rpcError) throw new Error(friendlyError(rpcError.message));
       if (file && existing) {
-        await supabase.storage.from("works").remove([existing.image_path, thumbPath(existing.image_path)]);
+        await supabase.storage.from(BUCKET).remove([existing.image_path, thumbPath(existing.image_path)]);
       }
       router.push(`/me?sent=${encodeURIComponent(String(code))}`);
       router.refresh();
     } catch (e) {
-      if (newPath) await supabase.storage.from("works").remove([newPath, thumbPath(newPath)]);
+      if (newPath) await supabase.storage.from(BUCKET).remove([newPath, thumbPath(newPath)]);
       const msg = e instanceof Error ? friendlyError(e.message) : "";
       setError(!msg || msg.startsWith("เชื่อมต่อไม่ได้") || msg.startsWith("ทำรายการไม่สำเร็จ") ? "ส่งไม่สำเร็จ ลองอีกครั้ง" : msg);
       setBusy(false);
@@ -117,7 +117,7 @@ export function SubmitForm({
           <h1 className="text-5xl font-bold leading-tight">{existing ? `แก้ไขผลงาน #${existing.code}` : "ส่งผลงานของฉัน"}</h1>
         </div>
         <div className="rounded-[18px] border-[1.5px] border-[rgba(124,245,196,0.3)] bg-[rgba(124,245,196,0.08)] px-4 py-3.5 text-[15px] text-ice">
-          ชื่อในบัญชี Google เห็นเฉพาะผู้สอน บนบอร์ดแสดงเป็นรหัสผลงานเท่านั้น
+          ชื่อที่ใช้สมัครเห็นเฉพาะผู้สอน บนบอร์ดแสดงเป็นรหัสผลงานเท่านั้น
         </div>
 
         <Field id="style" label="สไตล์ที่ใช้" value={style} onChange={setStyle} hints={STYLE_HINTS} placeholder="เช่น การ์ตูนลายเส้น" cls={fieldCls} />
@@ -148,7 +148,7 @@ export function SubmitForm({
 async function upload(supabase: ReturnType<typeof createClient>, path: string, img: Resized) {
   // ลองใหม่อัตโนมัติ 2 ครั้ง เผื่อเน็ตห้องเรียนสะดุด
   for (let attempt = 0; attempt < 3; attempt++) {
-    const { error } = await supabase.storage.from("works").upload(path, img.blob, { contentType: "image/jpeg", upsert: false });
+    const { error } = await supabase.storage.from(BUCKET).upload(path, img.blob, { contentType: "image/jpeg", upsert: false });
     if (!error) return;
     if (attempt === 2) throw new Error("ส่งไม่สำเร็จ ลองอีกครั้ง");
     await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));

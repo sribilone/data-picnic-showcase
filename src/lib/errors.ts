@@ -11,6 +11,23 @@ const MAP: [RegExp, string][] = [
   [/Failed to fetch|NetworkError|network/i, "เชื่อมต่อไม่ได้ ลองอีกครั้ง"],
 ];
 
+/** ข้อผิดพลาดตอนเข้าสู่ระบบและสมัคร */
+const AUTH: [RegExp, string][] = [
+  [/invalid login credentials|invalid_credentials/i, "อีเมลหรือรหัสผ่านไม่ถูกต้อง"],
+  [/already (been )?registered|already exists|user_already_exists|email_exists/i, "อีเมลนี้สมัครแล้ว ให้กดเข้าสู่ระบบ"],
+  [/password.*(6|short|weak)|weak_password/i, "รหัสผ่านอย่างน้อย 6 ตัว"],
+  [/email.*(invalid|format)|validation_failed/i, "อีเมลไม่ถูกต้อง"],
+  [/not confirmed|email_not_confirmed/i, "สมัครแล้ว แต่ยังเข้าใช้ไม่ได้ แจ้งผู้สอน"],
+  [/signups not allowed|signup_disabled/i, "ระบบปิดรับสมัคร แจ้งผู้สอน"],
+  [/rate limit|too many|over_request_rate_limit|429/i, "มีคนเข้าพร้อมกันมาก รอสักครู่แล้วลองอีกครั้ง"],
+  [/Failed to fetch|NetworkError|network/i, "เชื่อมต่อไม่ได้ ลองอีกครั้ง"],
+];
+
+export function authError(message: string | null | undefined): string {
+  for (const [re, text] of AUTH) if (message && re.test(message)) return text;
+  return "เข้าสู่ระบบไม่สำเร็จ ลองอีกครั้ง";
+}
+
 export function friendlyError(message: string | null | undefined): string {
   if (!message) return "ทำรายการไม่สำเร็จ ลองอีกครั้ง";
   if (/[฀-๿]/.test(message) && !/[A-Za-z_]{6,}/.test(message)) return message;

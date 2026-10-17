@@ -9,7 +9,8 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { friendlyError } from "@/lib/errors";
 import { isShowcaseUser } from "@/lib/supabase/schema";
 import { BUCKET, thumbPath } from "@/lib/image";
-import type { ShowCounts, VoteStatus } from "@/lib/types";
+import type { AdminResultRow, ShowCounts, VoteStatus } from "@/lib/types";
+import type { ExportRound, ExportWork } from "@/lib/exportZip";
 
 export type ActionResult = { error?: string };
 
@@ -122,4 +123,36 @@ export async function purgeStudents(): Promise<ActionResult & { deleted?: number
   await svc.from("audit_log").insert({ admin_email: (await supabase.auth.getUser()).data.user?.email ?? "", action: "ลบบัญชีผู้เรียน", target: `${deleted} บัญชี` });
   revalidatePath("/admin/settings");
   return { deleted };
+}
+
+// ---------- ส่งออกภาพและ Excel แยกโฟลเดอร์ตามรอบ · FR-048 ----------
+export async function getExportData(roundIds: string[]): Promise<{ error?: string; rounds?: ExportRound[] }> {
+  const supabase = await createClient();
+  const { data: isAdmin } = await supabase.rpc("is_admin");
+  if (!isAdmin) return { error: "ไม่มีสิทธิ์" };
+  const { data: rs, error } = await supabase.from("rounds").select("id, name, period, created_at, code_prefix").in("id", roundIds);
+  if (error) return { error: friendlyError(error.message) };
+  const ordered = (rs ?? []).sort((a, b) => a.created_at.localeCompare(b.created_at) || a.code_prefix.localeCompare(b.code_prefix));
+
+  const rounds: ExportRound[] = [];
+  for (const r of ordered) {
+    const [{ data: res, error: e1 }, { data: ws, error: e2 }] = await Promise.all([
+      supabase.rpc("admin_results", { p_round: r.id }),
+      supabase.from("works")
+        .select("code, owner_name, owner_email, style, tone, image_path, image_w, image_h, status, created_at")
+        .eq("round_id", r.id),
+    ]);
+    if (e1 || e2) return { error: friendlyError((e1 ?? e2)!.message) };
+    const score = new Map(((res ?? []) as AdminResultRow[]).map((x) => [x.code, x]));
+    const works: ExportWork[] = (ws ?? []).map((w) => ({
+      rank: score.get(w.code)?.rank ?? null,
+      code: w.code, owner_name: w.owner_name, owner_email: w.owner_email, style: w.style, tone: w.tone,
+      hearts: score.get(w.code)?.hearts ?? 0,
+      hidden: w.status === "hidden",
+      image_path: w.image_path, image_w: w.image_w, image_h: w.image_h, created_at: w.created_at,
+    }));
+    works.sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.code.localeCompare(b.code));
+    rounds.push({ name: r.name, period: r.period, works });
+  }
+  return { rounds };
 }

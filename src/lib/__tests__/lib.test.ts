@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { toCsv } from "../csv";
+import { imageFileName, safeName } from "../exportZip";
+import { buildXlsx, sheetName } from "../xlsx";
 import { authError, friendlyError } from "../errors";
 import { checkFile, thumbPath } from "../image";
 import { orientation, ratioText } from "../types";
@@ -61,5 +63,20 @@ describe("authError · FR-001", () => {
     expect(authError("Request rate limit reached")).toBe("มีคนเข้าพร้อมกันมาก รอสักครู่แล้วลองอีกครั้ง");
     expect(authError("Email not confirmed")).toBe("สมัครแล้ว แต่ยังเข้าใช้ไม่ได้ แจ้งผู้สอน");
     expect(authError("something else")).toBe("เข้าสู่ระบบไม่สำเร็จ ลองอีกครั้ง");
+  });
+});
+
+describe("export zip names · FR-048", () => {
+  it("ตั้งชื่อภาพ รหัส_ชื่อ และกันชื่อซ้ำ", () => {
+    const used = new Set<string>();
+    expect(imageFileName("A01", "สมศรี ใจดี", "r/u/1.jpg", used)).toBe("A01_สมศรี ใจดี.jpg");
+    expect(imageFileName("A01", "สมศรี ใจดี", "r/u/2.jpg", used)).toBe("A01_สมศรี ใจดี (2).jpg");
+    expect(imageFileName("A02", 'a/b:c*?"<>|', "x.jpg", used)).toBe("A02_a b c.jpg");
+    expect(safeName("  รอบที่ 1 / เช้า  ")).toBe("รอบที่ 1 เช้า");
+  });
+  it("ชื่อชีต Excel ไม่เกิน 31 ตัว และไม่มีอักขระต้องห้าม", () => {
+    expect(sheetName("รอบ[1]:ทดสอบ")).toBe("รอบ 1 ทดสอบ");
+    expect(sheetName("x".repeat(40)).length).toBe(31);
+    expect(buildXlsx("s", ["a"], [[1]])[0]).toBe(0x50);
   });
 });

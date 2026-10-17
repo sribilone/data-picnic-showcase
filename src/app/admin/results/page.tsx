@@ -1,8 +1,10 @@
 /**
  * ผลโหวตและส่งออก · SCR-044 · FR-046 ถึง FR-049 · BR-007 BR-018
+ * ส่งออกภาพ + Excel เป็น .zip 1 โฟลเดอร์ต่อ 1 รอบ
  */
 import { ArtFrame } from "@/components/ArtFrame";
 import { RoundPicker } from "@/components/admin/RoundPicker";
+import { ExportZipButton } from "@/components/admin/ExportZipButton";
 import { getSession } from "@/lib/session";
 import type { AdminResultRow, Round, RoundStats } from "@/lib/types";
 
@@ -38,6 +40,7 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
         <RoundPicker rounds={rounds} value={round.id} />
         <a href={`/admin/results/export?round=${round.id}`} className="btn-ghost h-[46px] px-5 text-[15px]">ส่งออก CSV</a>
       </div>
+      <ExportZipButton roundId={round.id} roundPrefix={round.code_prefix} allRoundIds={rounds.map((r) => r.id)} />
 
       <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
         <Kpi label="ผลงานในรอบ" value={String(s.works)} />
